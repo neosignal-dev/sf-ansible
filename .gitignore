@@ -1,0 +1,11 @@
+# Ansible-related
+*.retry
+*.log
+*.tmp
+*.bak
+
+# SSH keys (на всякий случай)
+*.pem
+*.pub
+*.key
+id_rsa*

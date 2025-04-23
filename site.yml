@@ -1,0 +1,99 @@
+---
+- name: Setup app servers (Docker)
+  hosts: app
+  become: true
+  tasks:
+    - name: Remove podman and podman-docker if present
+      yum:
+        name:
+          - podman-docker
+          - podman
+        state: absent
+      when: ansible_os_family == "RedHat"
+
+    - name: Add Docker repo for CentOS
+      yum_repository:
+        name: docker
+        description: Docker Repository
+        baseurl: https://download.docker.com/linux/centos/8/x86_64/stable
+        gpgcheck: yes
+        gpgkey: https://download.docker.com/linux/centos/gpg
+        enabled: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: Install Docker on Debian-based systems
+      apt:
+        name: docker.io
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Start and enable Docker on Debian-based systems
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+      when: ansible_os_family == "Debian"
+
+    - name: Install Docker on RedHat-based systems
+      yum:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Start and enable Docker on RedHat-based systems
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+      when: ansible_os_family == "RedHat"
+
+- name: Setup database servers (PostgreSQL)
+  hosts: database
+  become: true
+  tasks:
+    - name: Install prerequisites
+      apt:
+        name:
+          - wget
+          - ca-certificates
+          - gnupg
+          - lsb-release
+        state: present
+
+    - name: Add PostgreSQL GPG key
+      apt_key:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        state: present
+
+    - name: Add PostgreSQL APT repository
+      apt_repository:
+        repo: "deb http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main"
+        state: present
+
+    - name: Update APT cache
+      apt:
+        update_cache: yes
+
+    - name: Install PostgreSQL
+      apt:
+        name:
+          - "postgresql-{{ postgres_version }}"
+          - "postgresql-contrib"
+        state: present
+
+    - name: Ensure PostgreSQL is started and enabled
+      systemd:
+        name: postgresql
+        enabled: yes
+        state: started
+
+    - name: Ensure PostgreSQL data directory exists
+      file:
+        path: "{{ postgres_data_dir }}"
+        state: directory
+        owner: postgres
+        group: postgres
+        mode: '0700'
