@@ -3,6 +3,10 @@
 *.log
 *.tmp
 *.bak
+.bash_history
+.bash_logout
+.bashrc
+.profile
 
 # SSH keys (на всякий случай)
 *.pem
