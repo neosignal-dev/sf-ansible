@@ -1,12 +1,14 @@
+# exclude home user config files
+.bash_history
+.bash_logout
+.bashrc
+.profile
+
 # Ansible-related
 *.retry
 *.log
 *.tmp
 *.bak
-.bash_history
-.bash_logout
-.bashrc
-.profile
 
 # SSH keys (на всякий случай)
 *.pem
